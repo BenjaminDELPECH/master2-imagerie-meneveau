@@ -9,7 +9,7 @@ var rotMatrix = mat4.create();
 var distCENTER;
 var translateCustom;
 // =====================================================
-
+var myCube = new Cube3DClass();
 
 
 
@@ -25,12 +25,12 @@ var PlaneTex = { fname:'planetex', loaded:-1, shader:null };
 // =====================================================
 PlaneTex.initTexture = function()
 {
-	
+
 	var texImage = new Image();
 	texImage.src = "test.jpg";
 	texture = gl.createTexture();
 	texture.image = texImage;
-	
+
 	texture.image.onload = function () {
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -66,34 +66,13 @@ PlaneTex.initAll = function()
 }
 
 
-// =====================================================
-PlaneTex.setShadersParams = function()
-{
-	gl.useProgram(this.shader);
-
-	this.shader.vAttrib = gl.getAttribLocation(this.shader, "aVertexPosition");
-	gl.enableVertexAttribArray(this.shader.vAttrib);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
-	gl.vertexAttribPointer(this.shader.vAttrib, this.vBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-	this.shader.tAttrib = gl.getAttribLocation(this.shader, "aTexCoords");
-	gl.enableVertexAttribArray(this.shader.tAttrib);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
-	gl.vertexAttribPointer(this.shader.tAttrib,this.tBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-	this.shader.pMatrixUniform = gl.getUniformLocation(this.shader, "uPMatrix");
-	this.shader.mvMatrixUniform = gl.getUniformLocation(this.shader, "uMVMatrix");
-	this.shader.samplerUniform = gl.getUniformLocation(this.shader, "uSampler");
-	gl.uniform1i(this.shader.samplerUniform, 0);
-	gl.activeTexture(gl.TEXTURE0);
-}
 
 
 // =====================================================
 PlaneTex.draw = function()
 {
-	if(this.shader && this.loaded==4) {		
-		this.setShadersParams();
+	if(this.shader && this.loaded==4) {
+		PlaneTex.setShadersParams();
 		setMatrixUniforms(this);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
 		gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
@@ -115,8 +94,13 @@ PlaneTex.draw = function()
 
 // =====================================================
 function webGLStart() {
-	
+
 	var canvas = document.getElementById("WebGL-test");
+
+	//object creation
+
+
+
 
 	mat4.identity(rotMatrix);
 	distCENTER = vec3.create([0,0,-3.3]);
@@ -146,7 +130,7 @@ function initGL(canvas)
 		gl.clearColor(0.5, 0.7, 0.7, 1.0);
 		gl.enable(gl.DEPTH_TEST);
 		gl.enable(gl.CULL_FACE);
-		gl.cullFace(gl.BACK); 
+		gl.cullFace(gl.BACK);
 	} catch (e) {}
 	if (!gl) {
 		console.log("Could not initialise WebGL");
@@ -228,9 +212,9 @@ function drawScene() {
 	// PlaneTex.draw();
     // Triangle3D.draw();
     if(ui.reloadCube === true){
-		Cube3D.loaded = -1;
+		myCube.loaded = -1;
 	}
-    Cube3D.draw();
+	myCube.draw();
 	// Sphere3D.draw();
 }
 
