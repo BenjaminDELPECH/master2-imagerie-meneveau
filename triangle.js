@@ -55,12 +55,10 @@ Triangle3D.draw = function()
 {
 	if(this.shader && this.loaded==4) {		
 		this.setShadersParams();
-        console.log("1");
 		setMatrixUniforms(this);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
 		gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
 	} else if(this.loaded < 0) {
-        console.log("2");
 		this.loaded = 0;
 		this.initAll();
 	}

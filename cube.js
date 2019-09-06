@@ -6,18 +6,24 @@ var Cube3D = { fname:'cube', loaded:-1, shader:null };
 
 // =====================================================
 
-Cube3D.initAll = function()
-{
-    vertices = [
-        -0.3, -0.3,  0.3,	 0.3, -0.3,  0.3,	 0.3,  0.3,  0.3,	-0.3,  0.3,  0.3,
-        -0.3, -0.3, -0.3,	-0.3,  0.3, -0.3,	 0.3,  0.3, -0.3,	 0.3, -0.3, -0.3,
-        -0.3, -0.3, -0.3,	-0.3, -0.3,  0.3,	-0.3,  0.3,  0.3,	-0.3,  0.3, -0.3,
-        0.3, -0.3,  0.3,	 0.3,  0.3,  0.3,	 0.3,  0.3, -0.3,	 0.3, -0.3, -0.3,
-        -0.3,  0.3,  0.3,	 0.3,  0.3,  0.3,	 -0.3,  0.3, -0.3,	-0.3,  0.3, -0.3,
-        -0.3, -0.3,  0.3,	 0.3, -0.3,  0.3,	 0.3, -0.3, -0.3,	-0.3, -0.3, -0.3
-    ];
+Cube3D.sendVertices = function (verticesObj, verticesNumItems, colorsObj, colorsNumItems) {
 
-    texcoords = [ 
+    this.vBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verticesObj), gl.STATIC_DRAW);
+	this.vBuffer.itemSize = 3;
+	this.vBuffer.numItems = verticesNumItems;
+
+	// Colors (array)
+
+	this.cBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorsObj), gl.STATIC_DRAW);
+	this.cBuffer.itemSize = 3;
+	this.cBuffer.numItems = colorsNumItems;
+
+
+    var texcoordsCube = [
         0.0, 0.0,  1.0, 0.0,  1.0, 1.0,  0.0, 1.0,
         0.0, 0.0,  1.0, 0.0,  1.0, 1.0,  0.0, 1.0,
         0.0, 0.0,  1.0, 0.0,  1.0, 1.0,  0.0, 1.0,
@@ -25,35 +31,13 @@ Cube3D.initAll = function()
         0.0, 0.0,  1.0, 0.0,  1.0, 1.0,  0.0, 1.0,
         0.0, 0.0,  1.0, 0.0,  1.0, 1.0,  0.0, 1.0
     ];
-
-    this.vBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    this.vBuffer.itemSize = 3;
-    this.vBuffer.numItems = 24;
-
     this.tBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoordsCube), gl.STATIC_DRAW);
     this.tBuffer.itemSize = 2;
     this.tBuffer.numItems = 24;
 
-    // Colors (array)
-    colors = [	1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0,0.0, 0.0, 1.0
-
-    ];
-    this.cBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.cBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-    this.cBuffer.itemSize = 3;
-    this.cBuffer.numItems = 4;
-
-    loadShaders(this);
+	loadShaders(this);
 }
 
 
@@ -84,21 +68,31 @@ Cube3D.setShadersParams = function()
     this.shader.pMatrixUniform = gl.getUniformLocation(this.shader, "uPMatrix");
     this.shader.mvMatrixUniform = gl.getUniformLocation(this.shader, "uMVMatrix");
 }
+// =====================================================
+Cube3D.setMatrixUniforms = function() {
+    mat4.identity(mvMatrix);
+    mat4.translate(mvMatrix, distCENTER);
+    mat4.translate(mvMatrix, translateCustom);
+    mat4.multiply(mvMatrix, rotMatrix);
+    gl.uniformMatrix4fv(this.shader.pMatrixUniform, false, pMatrix);
+    gl.uniformMatrix4fv(this.shader.mvMatrixUniform, false, mvMatrix);
+}
 
 
 // =====================================================
 Cube3D.draw = function()
 {
-    if(this.shader && this.loaded==4) {		
+    if(this.shader && this.loaded==4) {
         this.setShadersParams();
-        console.log("1");
         setMatrixUniforms(this);
+        this.setMatrixUniforms(this);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
         gl.drawArrays(gl.TRIANGLE_FAN, 0, this.cBuffer.numItems);
         gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
     } else if(this.loaded < 0) {
-        console.log("2");
+
         this.loaded = 0;
-        this.initAll();
+        this.sendVertices(verticesCube, verticesCubeNumItems, colorsCube, colorsNumItems);
+        ui.reloadCube = false;
     }
 }

@@ -7,71 +7,9 @@ var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var rotMatrix = mat4.create();
 var distCENTER;
+var translateCustom;
 // =====================================================
 
-
-// =====================================================
-// PLAN 3D, Support géométrique
-// =====================================================
-
-var Plane3D = { fname:'plane', loaded:-1, shader:null };
-
-// =====================================================
-Plane3D.initAll = function()
-{
-	vertices = [ -0.5,  -0.25, 0.0,		-0.01, -0.25, 0.0,
-				 -0.01,  0.25, 0.0,		-0.5,   0.25, 0.0 ];
-	texcoords = [ 0.0,0.0,   0.0,1.0,   1.0,1.0,   1.0,0.0	];
-
-	this.vBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-	this.vBuffer.itemSize = 3;
-	this.vBuffer.numItems = 4;
-
-	this.tBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texcoords), gl.STATIC_DRAW);
-	this.tBuffer.itemSize = 2;
-	this.tBuffer.numItems = 4;
-
-	loadShaders(this);
-}
-
-
-// =====================================================
-Plane3D.setShadersParams = function()
-{
-	gl.useProgram(this.shader);
-
-	this.shader.vAttrib = gl.getAttribLocation(this.shader, "aVertexPosition");
-	gl.enableVertexAttribArray(this.shader.vAttrib);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuffer);
-	gl.vertexAttribPointer(this.shader.vAttrib, this.vBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-	this.shader.tAttrib = gl.getAttribLocation(this.shader, "aTexCoords");
-	gl.enableVertexAttribArray(this.shader.tAttrib);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
-	gl.vertexAttribPointer(this.shader.tAttrib,this.tBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-	this.shader.pMatrixUniform = gl.getUniformLocation(this.shader, "uPMatrix");
-	this.shader.mvMatrixUniform = gl.getUniformLocation(this.shader, "uMVMatrix");
-}
-
-
-// =====================================================
-Plane3D.draw = function()
-{
-	if(this.shader && this.loaded==4) {		
-		this.setShadersParams();
-		setMatrixUniforms(this);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, this.vBuffer.numItems);
-		gl.drawArrays(gl.LINE_LOOP, 0, this.vBuffer.numItems);
-	} else if(this.loaded < 0) {
-		this.loaded = 0;
-		this.initAll();
-	}
-}
 
 
 
@@ -181,7 +119,8 @@ function webGLStart() {
 	var canvas = document.getElementById("WebGL-test");
 
 	mat4.identity(rotMatrix);
-	distCENTER = vec3.create([0,0,-1.3]);
+	distCENTER = vec3.create([0,0,-3.3]);
+	translateCustom = vec3.create([0,0,0]);
 
 	canvas.onmousedown = handleMouseDown;
 	document.onmouseup = handleMouseUp;
@@ -192,6 +131,7 @@ function webGLStart() {
 	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
 	tick();
+	console.log("webGlStart");
 }
 
 // =====================================================
@@ -283,12 +223,15 @@ function setMatrixUniforms(Obj3D) {
 
 // =====================================================
 function drawScene() {
-
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	// Plane3D.draw();
+	Plane3D.draw();
 	// PlaneTex.draw();
-    Triangle3D.draw();
+    // Triangle3D.draw();
+    if(ui.reloadCube === true){
+		Cube3D.loaded = -1;
+	}
     Cube3D.draw();
+	// Sphere3D.draw();
 }
 
 

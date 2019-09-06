@@ -1,0 +1,28 @@
+html, body{
+    padding: 0;
+    margin:0;
+    background-color:#000000;
+}
+
+.main-container{
+    display:flex;width:100%;flex-flow: wrap;
+
+}
+
+.container-row{
+    display:flex;
+    width:100%;
+    flex-flow:wrap;
+}
+
+.container-row-centered{
+    display:flex;
+    width:100%;
+    justify-content: center;
+    flex-flow:wrap;
+}
+
+.header{
+    height:100px;
+    background-color:#000000;
+}
